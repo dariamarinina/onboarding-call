@@ -962,6 +962,85 @@ body.view-slides { background: var(--ink); }
   border-color: transparent; cursor: default; -webkit-text-fill-color: var(--text-secondary);
 }
 
+/* ============================================================
+   Student view on phones and small tablets.
+   Below 820px the 1280x720 stage stops being scaled down and
+   becomes a fluid, scrollable page instead.
+   ============================================================ */
+.view-slides.fluid .stage-wrap { position: fixed; inset: 0; display: block; }
+.view-slides.fluid .stage {
+  width: 100%; height: 100%;
+  transform: none !important; left: 0 !important; top: 0 !important;
+  position: relative;
+}
+.view-slides.fluid .stage .slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  padding: 26px 20px 64px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.view-slides.fluid .tt-logo-stage { bottom: 18px; left: 20px; }
+.view-slides.fluid .tt-logo-stage svg { height: 15px; }
+
+.fluid .small-label { font-size: 11px; margin-bottom: 10px; }
+.fluid h1, .fluid .hero-name { font-size: 34px !important; line-height: 36px !important; }
+.fluid h2 { font-size: 27px !important; line-height: 31px !important; }
+
+.fluid .agenda-3 { margin-top: 20px; gap: 7px; }
+.fluid .agenda-3 span { font-size: 13px; padding: 7px 13px; }
+.fluid .om-line { margin-top: 20px; }
+.fluid .om-dot { width: 36px; height: 36px; font-size: 16px; }
+.fluid .om-line p { font-size: 14px !important; }
+
+.fluid .confirm-list li { padding: 12px 14px; gap: 10px; flex-wrap: wrap; }
+.fluid .confirm-list .tick { width: 22px; height: 22px; font-size: 12px; }
+.fluid .confirm-list .ck { width: auto; font-size: 11px; flex: 1 0 100%; margin-left: 32px; margin-bottom: -6px; order: 1; }
+.fluid .confirm-list .cv { font-size: 16px; order: 2; margin-left: 32px; }
+
+.fluid .motiv-quote { font-size: 22px; line-height: 28px; }
+.fluid .motiv-arrow { margin-top: 20px; padding-top: 16px; }
+.fluid .motiv-arrow .mv { font-size: 19px; line-height: 24px; }
+.fluid .ask-big { font-size: 24px !important; line-height: 30px !important; }
+
+.fluid .anchor-card { padding: 16px 18px; }
+.fluid .anchor-card p { font-size: 16px; line-height: 22px; }
+.fluid .anchor-skills { margin-top: 16px; gap: 6px; }
+.fluid .anchor-skills span { font-size: 12px; padding: 6px 12px; }
+
+.fluid .fear-head { font-size: 13px; padding: 7px 14px; margin-bottom: 14px; }
+.fluid .anti-grid { grid-template-columns: 1fr; gap: 10px; }
+.fluid .anti-card { padding: 14px 16px; }
+.fluid .anti-card h4 { font-size: 16px; }
+.fluid .anti-card p { font-size: 14px; line-height: 19px; }
+
+.fluid .proof-card { padding: 18px 20px; }
+.fluid .proof-card .pq { font-size: 17px; line-height: 24px; }
+.fluid .proof-card .pa { font-size: 13px; margin-top: 10px; }
+.fluid .placeholder { padding: 16px 18px; }
+.fluid .placeholder p { font-size: 14px; line-height: 19px; }
+
+.fluid .route { flex-direction: column; gap: 14px; }
+.fluid .route-step { padding: 0; display: grid; grid-template-columns: 16px 1fr; gap: 0 10px; }
+.fluid .route-step .rdot { grid-row: 1 / 4; margin: 5px 0 0; width: 10px; height: 10px; }
+.fluid .route-step .rdate { font-size: 12px; margin-bottom: 2px; }
+.fluid .route-step .rtitle { font-size: 16px; line-height: 20px; margin-bottom: 2px; }
+.fluid .route-step .rbody { font-size: 13px; line-height: 17px; }
+
+.fluid .setup-grid { grid-template-columns: 1fr; gap: 14px; }
+.fluid .setup-list li { padding: 10px 13px; font-size: 14px; gap: 10px; }
+.fluid .setup-list .tick { width: 21px; height: 21px; font-size: 12px; }
+.fluid .setup-list li .sub { font-size: 11px; }
+.fluid .setup-side { padding: 16px 18px; }
+.fluid .setup-side h4 { font-size: 17px; margin-bottom: 8px; }
+.fluid .setup-side li { font-size: 14px; line-height: 20px; }
+
+.fluid .commit-box { padding: 20px 22px; }
+.fluid .commit-box .cl { font-size: 13px; }
+.fluid .commit-box .cv { font-size: 28px; line-height: 32px; }
+
+.fluid .close-list { margin-top: 18px; }
+.fluid .close-list li { font-size: 15px; line-height: 21px; padding: 6px 0 6px 20px; }
+
 </style>
 </head>
 <body data-accent="orange">
@@ -1095,6 +1174,9 @@ const CHECKS = [
   { id: 'discord', t: 'Inside the Discord server',  sub: 'can see all the channels',  wa: 'your Discord access' },
   { id: 'notif',   t: 'Notifications turned on',    sub: 'platform and Discord',      wa: 'notifications' }
 ];
+
+/* checked by the OM in the ticket before the call, adjustable during it */
+const SCENARIOS = [['A', 'Already has access'], ['B', 'Never logged in'], ['C', 'Access pending']];
 
 const CONFIRMS = [
   { id: 'c_prog', k: 'Course' },
@@ -1233,7 +1315,7 @@ const SLIDES = [
   goal: 'The first ten seconds have to prove this call is about them, not a script.',
   render: s => `
     <div class="slide slide-dark">
-      <h1 class="hero-name">Hi ${esc(s.name) || 'there'}.<br>Today we get<br>you set up.</h1>
+      <h1 class="hero-name">Hi ${esc(s.name) || 'there'}!<br>Today we set you up<br>for a successful start.</h1>
       <div class="agenda-3">
         <span>1 — Confirm your plan</span>
         <span>2 — Get your access working</span>
@@ -1243,22 +1325,22 @@ const SLIDES = [
         <div class="om-dot">${esc((s.omName || '?')[0])}</div>
         <div>
           <p style="color:var(--cream);font-size:17px;">${esc(s.omName)} · your Onboarding Manager</p>
-          <p style="font-size:14px;">Twenty minutes. You leave with everything working.</p>
+          <p style="font-size:14px;">It will take only 20 minutes. You will leave with everything working.</p>
         </div>
       </div>
     </div>`,
   cues: s => [
     'Hi <b>{name}</b>, I\u2019m {om}. How are you doing? Can you see and hear me alright?',
-    'Congratulations on making this decision — <em>of everyone we talk to, the people who actually change careers are the ones who act.</em>',
-    'This takes twenty minutes. We\u2019ll get your access working <b>today</b>, not tomorrow.'
+    'I want to congratulate you on taking this big step. <b>Out of the hundreds of people we speak to, the ones who really succeed and change careers are exactly the ones who decide to act — just like you did.</b>',
+    'My goal today is to make sure you have everything you need to start with confidence. Starting something new is exciting, but it can also bring up questions or concerns, and I\u2019m here to help you work through every one of them.'
   ],
-  listen: 'Camera on, and on a computer. If they\u2019re on a phone → switch the scenario on the setup block.'
+  listen: 'Camera on, and on a computer — perfect setup. If they\u2019re on a phone → adjust the flow and set up access over WhatsApp.'
 },
 
 /* 2 ------------------------------------------------------------------- */
 {
   id: 'confirm', label: 'Your seat', mins: 2,
-  goal: 'A verification ritual. Removes the “did I buy the right thing” doubt, which drives refunds directly.',
+  goal: 'Verification of student data. Make sure the info from the closer is correct before moving on.',
   render: s => `
     <div class="slide">
       <p class="small-label">Let\u2019s confirm together</p>
@@ -1271,24 +1353,26 @@ const SLIDES = [
       </ul>
     </div>`,
   cues: s => [
-    'Before anything else, let\u2019s confirm three things. <em>(tick each one on screen as they answer)</em>',
-    'Which email did you sign up with? — <b>it has to match the platform account.</b>',
-    'Good: your seat is reserved and we\u2019ll see you on {startDay}.'
+    'Before we move on, I\u2019d like to quickly confirm a few details. <em>(tick each one on screen as they answer)</em>',
+    'You\u2019re enrolled in the <b>{program}</b> program, correct?',
+    'Your start date is <b>{startDay}</b>? <em>(try to convince them to start ASAP)</em>',
+    'I have an email on file here — could you confirm which email you signed up with?',
+    'Perfect, your seat is already reserved.'
   ],
-  listen: 'If the email doesn\u2019t match, note it down. It gets fixed in the setup block, not here.',
+  listen: 'If any of the data doesn\u2019t match — reassure them it will be fixed promptly, use Edit details, and carry on with the onboarding.',
   controls: 'confirms'
 },
 
 /* 3 ------------------------------------------------------------------- */
 {
-  id: 'motivation', label: 'Their why', mins: 3,
-  goal: 'The emotional anchor. The slide is nearly empty on purpose — they talk here, not you.',
+  id: 'motivation', label: 'Motivation', mins: 3,
+  goal: 'Reconnect with the student\u2019s motivation to remind them what they enrolled for.',
   render: s => `
     <div class="slide">
       <p class="small-label">${s.motivationPrefilled ? 'What you told our admissions team' : 'In your own words'}</p>
       ${s.motivation
         ? `<div class="motiv-quote">${esc(s.motivation)}</div>`
-        : `<div class="ask-big">Why this, and why now?</div>`}
+        : `<div class="ask-big">Why did you decide<br>to make this career change?</div>`}
       <div class="motiv-arrow">
         <div class="ml">In ${esc(s.months)} months</div>
         <div class="mv">${esc(s.outcome)}</div>
@@ -1298,21 +1382,23 @@ const SLIDES = [
     'I saw that when you spoke to admissions you mentioned this. <b>Is that right? Anything you\u2019d add?</b>',
     '<em>(pause — give them room, don\u2019t fill the silence)</em>',
     'What are you most looking forward to about this change?',
-    'Everything we do over these weeks points exactly there.'
+    'That\u2019s great — thank you for sharing that with me. And I want you to know you\u2019re not alone in this. Our whole team is here to support you from this moment on, and throughout your journey in the program.',
+    'Picture this: in <b>{months} months</b> you\u2019ll be {outcome}.'
   ] : [
-    'Before we go further — <b>tell me in your own words: why this, and why now?</b>',
-    '<em>(type what they say into the box below — it appears on their screen, in their words)</em>',
-    'What would be different a year from now if this works?',
-    'Everything we do over these weeks points exactly there.'
+    '<b>Why did you decide to make this career change?</b>',
+    '<em>(pause, listen actively — then type what they say into the box below, in their words)</em>',
+    'What are you most looking forward to about this change?',
+    'That\u2019s great — thank you for sharing that with me. You\u2019re not alone in this: our whole team is here to support you from this moment on.',
+    'Picture this: in <b>{months} months</b> you\u2019ll be {outcome}.'
   ],
-  listen: 'Write down their exact words. They go on screen now and into the closing WhatsApp later.',
+  listen: 'Write down the student\u2019s exact words as they describe their goal.',
   controls: 'motivation'
 },
 
 /* 4 ------------------------------------------------------------------- */
 {
-  id: 'anchor', label: 'Their strength', mins: 1.5,
-  goal: 'Turns “I don\u2019t know if I can” into “I\u2019ve done something like this before”. Use their story, not platitudes.',
+  id: 'anchor', label: 'Strength', mins: 3,
+  goal: 'Turns “I don\u2019t know if I can” into “I\u2019ve done something like this before”.',
   render: s => `
     <div class="slide">
       <p class="small-label">You\u2019ve done something like this before</p>
@@ -1322,23 +1408,27 @@ const SLIDES = [
         : `<div class="ask-big" style="font-size:34px;line-height:42px;">What\u2019s something you\u2019ve done<br>that was genuinely hard?</div>`}
       <div class="anchor-skills"><span>Persistence</span><span>Learning fast</span><span>Holding up under pressure</span></div>
     </div>`,
-  cues: s => s.anchorPrefilled ? [
-    'One thing that stood out to me in your profile is this.',
-    'That takes persistence, adapting, and learning quickly — fair?',
-    '<b>Those are exactly the things that move students forward here.</b>'
+  cues: s => (s.anchorPrefilled ? [
+    'Something that really stood out to me is what you mentioned. <em>(read the line on the slide back to them)</em>',
+    'That tells me something important: <b>you\u2019ve overcome challenges before.</b>'
   ] : [
-    'Tell me about something you\u2019ve done that was genuinely hard. Work, study, anything.',
-    '<em>(capture it in one line below — they see it on screen)</em>',
-    'That took persistence and learning quickly. <b>Those are exactly the things that move students forward here.</b>'
-  ],
+    'Tell me about something you\u2019ve done that was genuinely hard — work, study, anything.',
+    '<em>(capture it in one line below — they see it on screen)</em>'
+  ]).concat([
+    'You probably had to use persistence, adaptability and the ability to learn new things, right? <b>Those are exactly the skills that help students move forward in this program.</b>',
+    'Learning something new can feel uncomfortable at first. Has it ever happened that you start something new and not everything clicks right away? <em>(listen)</em>',
+    'That happened to a lot of our graduates — doubts on the first technical exercises, feeling overwhelmed. That\u2019s completely normal.',
+    'What matters isn\u2019t never getting stuck. It\u2019s keeping going when things get hard, and knowing how to ask for help.',
+    '<b>The good news: you won\u2019t walk this path alone.</b> During the program you\u2019ll have several forms of support to get past obstacles and keep your momentum.'
+  ]),
   listen: 'If they brush the achievement off, push once. Get them to say it out loud.',
   controls: 'anchor'
 },
 
 /* 5 ------------------------------------------------------------------- */
 {
-  id: 'fear', label: 'Their concern', mins: 3,
-  goal: 'This is where the course gets re-sold: only the two pieces that answer THEIR concern, not all five.',
+  id: 'fear', label: 'Concern', mins: 2.5,
+  goal: 'This is where the course gets re-sold.',
   render: s => {
     const f = fearById(s.fearId);
     if (!f) return `
@@ -1357,7 +1447,7 @@ const SLIDES = [
     </div>`;
   },
   cues: s => s.fearPrefilled ? [
-    'Going through your notes I saw you mentioned this. <b>Tell me a bit more — what worries you most about it?</b>',
+    'Going through your notes I saw you mentioned <b>{concern}</b>. Tell me a bit more — what worries you most about it?',
     '<em>(acknowledge before you answer — don\u2019t jump to defending the product)</em>',
     'Learning something new feels uncomfortable at first. The point isn\u2019t never getting stuck — it\u2019s not staying stuck alone.'
   ] : [
@@ -1372,8 +1462,8 @@ const SLIDES = [
 
 /* 6 ------------------------------------------------------------------- */
 {
-  id: 'proof', label: 'Proof', mins: 1,
-  goal: 'One story, from the profile closest to theirs. No logo walls, no loose numbers.',
+  id: 'proof', label: 'Success story', mins: 1,
+  goal: 'A success story from a student who already did it.',
   render: s => s.story
     ? `<div class="slide">
         <p class="small-label">Someone who started where you are</p>
@@ -1389,26 +1479,26 @@ const SLIDES = [
        </div>`,
   cues: s => [
     'Let me tell you about someone who started from a similar place.',
-    '<b>One story, kept short.</b> Run long here and you lose the setup time.'
+    '<em>(tell the story on the slide — one story, kept short)</em>'
   ],
-  listen: 'Numbers: LATAM-approved figures only. No employment promises, no timelines.'
+  listen: '—'
 },
 
 /* 7 ------------------------------------------------------------------- */
 {
-  id: 'route', label: 'Road to day 1', mins: 1,
+  id: 'route', label: 'Steps to start', mins: 1,
   goal: 'Places the call inside a path with dates. Kills the “so what now” feeling.',
   render: s => {
     const steps = [
       { d: 'Today', t: 'This call', b: 'Access working and your first step set.', now: true },
       { d: 'Before ' + enDate(s.startDate), t: 'Welcome sprint', b: '20–30 minutes. How the program works.' },
       { d: enDateShort(s.startDate), t: 'Live onboarding session', b: 'The link comes via Discord and WhatsApp.' },
-      { d: 'Day 1', t: 'Sprint 1, lesson 1', b: 'That\u2019s what activates your seat.' }
+      { d: enDateShort(s.startDate), t: 'Sprint 1, lesson 1', b: 'Start with the first lesson, takes 30 min. That\u2019s what activates your seat.' }
     ];
     return `
     <div class="slide">
       <p class="small-label">From here to your first day</p>
-      <h2>Your road, with dates</h2>
+      <h2>Simple steps to start with</h2>
       <div class="route">
         ${steps.map(x => `<div class="route-step ${x.now ? 'now' : ''}">
           <div class="rdot"></div>
@@ -1428,15 +1518,14 @@ const SLIDES = [
 
 /* 8 ------------------------------------------------------------------- */
 {
-  id: 'setup', label: 'Live setup', mins: 5.5,
-  goal: 'The reason this call is on video. It happens HERE, with them — not over WhatsApp afterwards.',
+  id: 'setup', label: 'Access setup', mins: 4.5,
+  goal: '',
   render: s => {
     const side = {
       A: { h: 'You already have access', ol: ['Open the platform and log in with your email.', 'Check you can see your cohort starting ' + enDate(s.startDate) + '.', 'Open the welcome sprint.', 'Join Discord and confirm you see all the channels.'] },
       B: { h: 'Let\u2019s register you now', ol: ['Open the link I just dropped in the chat.', 'Register with <span class="mono">' + esc(s.email || 'your sign-up email') + '</span>.', 'Share your screen and we do it together.', 'Once you\u2019re in, we open the welcome sprint.'] },
-      C: { h: 'Your access is being set up', ol: ['Your access is still activating on our side.', 'I\u2019ll message you the moment it\u2019s live — today.', 'Meanwhile, let\u2019s get you into Discord.', 'And go through what to expect in the first weeks.'] },
-      phone: { h: 'We\u2019ll do it on your phone', ol: ['Discord first — installs in a minute.', 'Platform sign-up in the phone browser.', 'I\u2019ll send you the steps on WhatsApp after.', 'Let\u2019s book 10 minutes tomorrow on a computer.'] }
-    }[S.branch];
+      C: { h: 'Your access is being set up', ol: ['Your access is still activating on our side.', 'I\u2019ll message you the moment it\u2019s live — today.', 'Meanwhile, let\u2019s get you into Discord.', 'And go through what to expect in the first weeks.'] }
+    }[S.branch] || {};
     return `
     <div class="slide">
       <p class="small-label">We do this together, right now</p>
@@ -1452,11 +1541,25 @@ const SLIDES = [
       </div>
     </div>`;
   },
-  cues: s => [
-    '<b>Share your screen and we\u2019ll do it together</b> — that way nothing is left hanging.',
-    'I\u2019ll tick each item here as it\u2019s done.',
-    'If something won\u2019t load, I note it and I handle it. It doesn\u2019t stay on your plate.'
-  ],
+  cues: s => ({
+    A: [
+      'I can see you already got into the platform — that\u2019s a great sign, you\u2019ve taken the first step.',
+      'The most important thing before your cohort starts is the <b>Welcome Sprint</b>. It isn\u2019t just an intro module: it shows you how the program works and helps you build the habit of studying.',
+      'Students who complete it before their cohort starts are more likely to finish the program.',
+      '<b>Have you had a chance to start it?</b> <em>(yes → ask how it\u2019s going and what stood out; no → go to the commitment)</em>'
+    ],
+    B: [
+      'Thanks for telling me — that\u2019s very common in the first days, don\u2019t worry.',
+      'The platform is where you\u2019ll do your lessons, projects and activities. It also holds the program info and the support tools you\u2019ll use.',
+      '<b>Share your screen and we\u2019ll register you right now</b> — I\u2019ll also send the step-by-step instructions on WhatsApp.',
+      'Once you\u2019re in, make the <b>Welcome Sprint</b> your first priority. It gets you ready for day one.'
+    ],
+    C: [
+      'Before we continue — I can see your platform access is still being activated.',
+      'Don\u2019t worry, we\u2019re already working on it. <b>Explain exactly where it stands and whether they need to do anything.</b>',
+      'In the meantime, let\u2019s make sure you know what to expect over the next weeks, and let me answer any questions about the program.'
+    ]
+  })[S.branch] || [],
   listen: 'Minimum bar for the call: logged in + Discord. Get only that and the video already paid off.',
   controls: 'setup'
 },
@@ -1475,13 +1578,11 @@ const SLIDES = [
         <div class="cl">You\u2019ll do it</div>
         <div class="cv ${has ? '' : 'empty'}">${has ? esc((S.commitDay || '') + (S.commitTime ? ' · ' + S.commitTime : '')) : 'Which day, and what time?'}</div>
       </div>
-      <p class="commit-after">I\u2019ll message you on ${esc(S.commitDay || 'the day we agree')} to see how it went. It doesn\u2019t have to be perfect — just take the next step.</p>
     </div>`;
   },
   cues: s => [
     'Which day and what time can you give it 20 or 30 minutes?',
-    '<em>(type it on screen while they say it — let them see it)</em>',
-    'Done. I\u2019ll message you that day to see how it went.'
+    '<em>(type it on screen while they say it — let them see it)</em>'
   ],
   listen: 'If they say “whenever I can”, don\u2019t accept it. Ask for a day and a time.',
   controls: 'commit'
@@ -1503,8 +1604,7 @@ const SLIDES = [
     </div>`,
   cues: s => [
     'Any questions before we wrap up?',
-    'It was good to meet you, <b>{name}</b>. You start this today, and you\u2019re not doing it on your own.',
-    '<em>(don\u2019t hang up without sending the WhatsApp — use the button below)</em>'
+    'It was good to meet you, <b>{name}</b>. You start this today, and you\u2019re not doing it on your own.'
   ],
   listen: '—'
 }
@@ -1521,10 +1621,14 @@ const stageHTML = (s, i) => {
   </div>`;
 };
 
+const FLUID_MAX = 820;
+function isFluid() { return S.view === 'slides' && window.innerWidth <= FLUID_MAX; }
+
 function fitStage(wrapSel) {
   const wrap = document.querySelector(wrapSel);
   const st = wrap && wrap.querySelector('.stage');
   if (!st) return;
+  if (isFluid()) { st.style.transform = ''; st.style.left = ''; st.style.top = ''; st.style.position = 'relative'; return; }
   const k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
   st.style.transform = `scale(${k})`;
   st.style.left = ((wrap.clientWidth - 1280 * k) / 2) + 'px';
@@ -1535,7 +1639,7 @@ function fitStage(wrapSel) {
 /* ------------------------------------------------------- student window */
 
 function renderSlidesView() {
-  document.body.className = 'view-slides';
+  document.body.className = 'view-slides' + (window.innerWidth <= FLUID_MAX ? ' fluid' : '');
   const pct = ((S.idx + 1) / SLIDES.length) * 100;
   document.getElementById('app').innerHTML = `
     <div class="progress-thin" style="width:${pct}%"></div>
@@ -1546,8 +1650,13 @@ function renderSlidesView() {
 /* ---------------------------------------------------- presenter window */
 
 function cueText(t, s) {
+  const f = fearById(s.fearId);
   return t.replace(/\{name\}/g, esc(s.name))
           .replace(/\{om\}/g, esc(s.omName))
+          .replace(/\{program\}/g, esc(s.program))
+          .replace(/\{months\}/g, esc(s.months))
+          .replace(/\{outcome\}/g, esc(s.outcome))
+          .replace(/\{concern\}/g, esc(f ? f.slide.toLowerCase() : 'this'))
           .replace(/\{startDay\}/g, esc(enDate(s.startDate, { weekday: 'long', month: 'long', day: 'numeric' })));
 }
 
@@ -1585,7 +1694,7 @@ function renderPresenter() {
 
     <div class="pres-right"><div class="pres-scroll">
       <div class="p-head"><h3>${esc(sl.label)}</h3><span class="p-mins">${sl.mins} min</span></div>
-      <p class="p-goal">${esc(sl.goal)}</p>
+      ${sl.goal ? `<p class="p-goal">${esc(sl.goal)}</p>` : ''}
 
       <div class="p-block">
         <div class="lbl">What to say</div>
@@ -1609,7 +1718,7 @@ function renderControls(sl, s) {
       <ul class="pchecks">${CONFIRMS.map(c => `<li class="${S.confirms[c.id] ? 'done' : ''}" onclick="toggleConfirm('${c.id}')"><span class="box">✓</span>${esc(c.k)}</li>`).join('')}</ul></div>`;
   }
   if (sl.controls === 'setup') {
-    const branches = [['A', 'Already has access'], ['B', 'Never logged in'], ['C', 'Access pending'], ['phone', 'On a phone']];
+    const branches = SCENARIOS;
     return `<div class="p-block"><div class="lbl">Scenario</div>
         <div class="chips" style="margin-bottom:16px;">${branches.map(b => `<button class="chip ${S.branch === b[0] ? 'on' : ''}" onclick="setBranch('${b[0]}')">${b[1]}</button>`).join('')}</div>
         <div class="lbl">Live checklist</div>
@@ -1624,12 +1733,12 @@ function renderControls(sl, s) {
       ${f ? `<div class="listen" style="margin-top:12px;">${esc(f.ack)}</div>` : ''}</div>`;
   }
   if (sl.controls === 'motivation') {
-    return `<div class="p-block"><div class="lbl">${s.motivationPrefilled ? 'Edit live if they correct you' : 'Type what they say — it appears on their screen'}</div>
+    return `<div class="p-block"><div class="lbl">Edit live if they correct you, or if there was no Glyphic before the call</div>
       <div class="field" style="margin:0"><textarea id="liveMot" placeholder="In their words, one or two lines." oninput="setLive('motivation', this.value)">${esc(s.motivation)}</textarea>
       <div class="hint" style="margin-top:6px;">Esc when you\u2019re done, then the arrows work again.</div></div></div>`;
   }
   if (sl.controls === 'anchor') {
-    return `<div class="p-block"><div class="lbl">${s.anchorPrefilled ? 'Edit live if they correct you' : 'Capture it in one line — it appears on their screen'}</div>
+    return `<div class="p-block"><div class="lbl">Edit live if they correct you, or if there was no Glyphic before the call</div>
       <div class="field" style="margin:0"><textarea id="liveAnc" placeholder="You ran a team of 20 through a restructuring and kept everyone together." oninput="setLive('anchor', this.value)">${esc(s.anchor)}</textarea>
       <div class="hint" style="margin-top:6px;">Esc when you\u2019re done, then the arrows work again.</div></div></div>`;
   }
@@ -1758,6 +1867,11 @@ function renderPrep() {
               <div class="hint">Filled from the course.</div></div>
           </div>
           <div class="field"><label>Student email</label><input id="fEmail" value="${esc(s.email)}"></div>
+          <div class="field" style="margin-bottom:0">
+            <label>Platform access — what you see in the ticket</label>
+            <div class="chips">${SCENARIOS.map(b => `<button class="chip ${S.branch === b[0] ? 'on' : ''}" onclick="setBranch('${b[0]}')">${b[1]}</button>`).join('')}</div>
+            <div class="hint">Sets the script and the instructions on the access setup slide. Changeable during the call.</div>
+          </div>
         </div>
 
         <div class="panel">
@@ -1942,13 +2056,14 @@ window.addEventListener('message', e => {
   if (d.type === 'hello' && S.view === 'presenter') pushStudent();
 });
 
-/* A tab, not a popup: in Meet share "Chrome tab" and pick it. The tab keeps
-   being shared while the OM looks at this panel, and Meet's picture-in-picture
-   floats the student's face on top of it. */
+/* A tab, not a popup — window.open with no size features opens a tab, and this
+   runs from a click, so the popup blocker doesn't apply. In Meet share
+   "Chrome tab" and pick it: it keeps being shared while the OM looks at this
+   panel, with Meet's picture-in-picture floating the student's face on top. */
 function openStudent() {
   const url = location.pathname + '?view=slides';
   childWin = window.open(url, 'om_student');
-  if (!childWin) return toast('The browser blocked it — allow pop-ups for this page');
+  if (!childWin) return toast('The browser blocked the new tab — check its site settings');
   setTimeout(pushStudent, 600);
   toast('In Meet: share Chrome tab → that tab');
 }
@@ -1984,7 +2099,8 @@ document.addEventListener('keydown', e => {
 });
 
 window.addEventListener('resize', () => {
-  fitStage(S.view === 'slides' ? '.stage-wrap' : '.pres-preview .stage-wrap');
+  if (S.view === 'slides') { renderSlidesView(); return; }   // fluid ↔ scaled needs a re-render
+  fitStage('.pres-preview .stage-wrap');
 });
 
 setInterval(() => {
