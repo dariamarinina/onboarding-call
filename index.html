@@ -976,11 +976,15 @@ body.view-slides { background: var(--ink); }
 .view-slides.fluid .stage .slide {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
-  padding: 26px 20px 64px;
+  padding: 30px 20px 40px;
+  /* plain `center` makes tall slides overflow past the top edge, where they
+     can't be scrolled to. `safe center` centres while it fits and falls back
+     to top alignment once it doesn't. flex-start first, for old engines. */
+  justify-content: flex-start;
+  justify-content: safe center;
   overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
-.view-slides.fluid .tt-logo-stage { bottom: 18px; left: 20px; }
-.view-slides.fluid .tt-logo-stage svg { height: 15px; }
+.view-slides.fluid .tt-logo-stage { display: none; }   /* it floated over the scroll */
 
 .fluid .small-label { font-size: 11px; margin-bottom: 10px; }
 .fluid h1, .fluid .hero-name { font-size: 34px !important; line-height: 36px !important; }
@@ -992,10 +996,14 @@ body.view-slides { background: var(--ink); }
 .fluid .om-dot { width: 36px; height: 36px; font-size: 16px; }
 .fluid .om-line p { font-size: 14px !important; }
 
-.fluid .confirm-list li { padding: 12px 14px; gap: 10px; flex-wrap: wrap; }
-.fluid .confirm-list .tick { width: 22px; height: 22px; font-size: 12px; }
-.fluid .confirm-list .ck { width: auto; font-size: 11px; flex: 1 0 100%; margin-left: 32px; margin-bottom: -6px; order: 1; }
-.fluid .confirm-list .cv { font-size: 16px; order: 2; margin-left: 32px; }
+.fluid .confirm-list li {
+  display: grid; grid-template-columns: 22px 1fr;
+  gap: 2px 12px; align-items: start;
+  padding: 13px 15px; margin-bottom: 7px;
+}
+.fluid .confirm-list .tick { width: 22px; height: 22px; font-size: 12px; grid-row: 1 / 3; margin-top: 1px; }
+.fluid .confirm-list .ck { width: auto; font-size: 11px; margin: 0; }
+.fluid .confirm-list .cv { font-size: 17px; line-height: 22px; margin: 0; }
 
 .fluid .motiv-quote { font-size: 22px; line-height: 28px; }
 .fluid .motiv-arrow { margin-top: 20px; padding-top: 16px; }
@@ -1040,6 +1048,16 @@ body.view-slides { background: var(--ink); }
 
 .fluid .close-list { margin-top: 18px; }
 .fluid .close-list li { font-size: 15px; line-height: 21px; padding: 6px 0 6px 20px; }
+
+/* bottom fade while a fluid slide still has content below the fold */
+.view-slides.fluid .slide.has-more::after {
+  content: ''; position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+  background: linear-gradient(to bottom, rgba(242,241,238,0), var(--cream));
+  pointer-events: none;
+}
+.view-slides.fluid .slide.slide-dark.has-more::after {
+  background: linear-gradient(to bottom, rgba(26,26,26,0), var(--ink));
+}
 
 </style>
 </head>
@@ -1220,7 +1238,7 @@ function enDate(iso, opts) {
   if (isNaN(d)) return iso;
   return d.toLocaleDateString('en-US', opts || { month: 'long', day: 'numeric' });
 }
-function enDateShort(iso) { return enDate(iso, { weekday: 'short', month: 'short', day: 'numeric' }); }
+function enDateShort(iso) { return enDate(iso, { weekday: 'long', month: 'long', day: 'numeric' }); }
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
@@ -1446,8 +1464,9 @@ const SLIDES = [
       </div>
     </div>`;
   },
-  cues: s => s.fearPrefilled ? [
-    'Going through your notes I saw you mentioned <b>{concern}</b>. Tell me a bit more — what worries you most about it?',
+  cues: s => s.fearsRaw ? [
+    'Going through your notes I saw you mentioned: <b>{concern}</b>',
+    'Tell me a bit more — what worries you most about it?',
     '<em>(acknowledge before you answer — don\u2019t jump to defending the product)</em>',
     'Learning something new feels uncomfortable at first. The point isn\u2019t never getting stuck — it\u2019s not staying stuck alone.'
   ] : [
@@ -1493,7 +1512,7 @@ const SLIDES = [
       { d: 'Today', t: 'This call', b: 'Access working and your first step set.', now: true },
       { d: 'Before ' + enDate(s.startDate), t: 'Welcome sprint', b: '20–30 minutes. How the program works.' },
       { d: enDateShort(s.startDate), t: 'Live onboarding session', b: 'The link comes via Discord and WhatsApp.' },
-      { d: enDateShort(s.startDate), t: 'Sprint 1, lesson 1', b: 'Start with the first lesson, takes 30 min. That\u2019s what activates your seat.' }
+      { d: enDateShort(s.startDate), t: 'Sprint 1, lesson 1', b: 'Start with the first lesson, takes 30 min. One lesson a day is a perfect pace!' }
     ];
     return `
     <div class="slide">
@@ -1645,6 +1664,20 @@ function renderSlidesView() {
     <div class="progress-thin" style="width:${pct}%"></div>
     <div class="stage-wrap">${stageHTML(S.student, S.idx)}</div>`;
   fitStage('.stage-wrap');
+  markScrollable();
+}
+
+/* On a phone a long slide scrolls, but nothing tells the student there is more
+   below. Fade the bottom edge while there is something left to scroll to. */
+function markScrollable() {
+  const sl = document.querySelector('.view-slides .slide');
+  if (!sl) return;
+  const upd = () => {
+    const more = sl.scrollHeight - sl.clientHeight - sl.scrollTop > 8;
+    sl.classList.toggle('has-more', more);
+  };
+  sl.addEventListener('scroll', upd, { passive: true });
+  requestAnimationFrame(upd);
 }
 
 /* ---------------------------------------------------- presenter window */
@@ -1656,7 +1689,7 @@ function cueText(t, s) {
           .replace(/\{program\}/g, esc(s.program))
           .replace(/\{months\}/g, esc(s.months))
           .replace(/\{outcome\}/g, esc(s.outcome))
-          .replace(/\{concern\}/g, esc(f ? f.slide.toLowerCase() : 'this'))
+          .replace(/\{concern\}/g, esc(s.fearsRaw || (f ? f.slide : 'this')))
           .replace(/\{startDay\}/g, esc(enDate(s.startDate, { weekday: 'long', month: 'long', day: 'numeric' })));
 }
 
@@ -1757,27 +1790,20 @@ function renderControls(sl, s) {
 
 function waMessage() {
   const s = S.student;
-  const done = CHECKS.filter(c => S.checks[c.id]).map(c => c.wa);
-  const pend = CHECKS.filter(c => !S.checks[c.id]).map(c => c.wa);
   return [
     `It was a real pleasure talking to you, ${s.name} 🙌`,
     ``,
     `Your seat on the ${s.program} course is reserved, and your cohort starts on ${enDate(s.startDate, { weekday: 'long', month: 'long', day: 'numeric' })} 🎉`,
     ``,
-    s.motivation ? `I kept thinking about what you shared with me: ${lcFirst(s.motivation).replace(/\.$/, '')}.` : ``,
-    s.motivation ? `` : undefined,
-    s.anchor ? `And remember what we talked about: ${lcFirst(s.anchor).replace(/\.$/, '')}. You have what it takes.` : ``,
-    s.anchor ? `` : undefined,
-    done.length ? `Sorted today: ${done.join(', ')}.` : ``,
-    pend.length ? `Still open: ${pend.join(', ')}. We\u2019ll finish that together — I\u2019ll follow up.` : ``,
-    ``,
-    S.commitDay ? `Your next step: the welcome sprint on ${S.commitDay}${S.commitTime ? ' at ' + S.commitTime : ''}. I\u2019ll check in with you that day.` : `Your next step is the welcome sprint — 20 or 30 minutes.`,
+    `Your next step is `,
     ``,
     `It doesn\u2019t have to be perfect. Just take the next step.`,
     `I\u2019m here for anything you need 💪`,
     `— ${s.omName}`
-  ].filter(x => x !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
+  ].join('\n');
 }
+
+const SHOW_TRACKING = false;   // hidden for now; trackLine() stays ready
 
 function trackLine() {
   const s = S.student;
@@ -1799,12 +1825,10 @@ function renderHandoff() {
   document.getElementById('app').innerHTML = `
   <div class="prep handoff"><div class="prep-inner" style="max-width:940px;">
     <h1>Call closed</h1>
-    <p class="prep-sub">Two copy-pastes and you\u2019re done: the WhatsApp for the student, and the tracking line for the test sheet.</p>
+    <p class="prep-sub">Send the WhatsApp follow-up to the student right away.</p>
 
     <div class="panel" style="margin-bottom:20px;">
-      <h3><span class="stepnum">1</span>Follow-up WhatsApp</h3>
-      <p class="psub">Based on <b>onb_after_call_*</b>, with their own words already inserted.</p>
-      <div class="warnbox" style="margin-bottom:14px;">Read it before sending. Anything that still reads as “he/she” has to become “you”.</div>
+      <h3>Follow-up WhatsApp</h3>
       <textarea id="waOut">${esc(waMessage())}</textarea>
       <div style="margin-top:12px;display:flex;gap:10px;">
         <button class="btn btn-solid" onclick="copyFrom('waOut')">Copy message</button>
@@ -1812,12 +1836,12 @@ function renderHandoff() {
       </div>
     </div>
 
-    <div class="panel" style="margin-bottom:20px;">
-      <h3><span class="stepnum">2</span>Test tracking line</h3>
+    ${SHOW_TRACKING ? `<div class="panel" style="margin-bottom:20px;">
+      <h3>Test tracking line</h3>
       <p class="psub">For the attendance sheet until automatic tracking exists.</p>
       <div class="mono-out" id="trackOut">${esc(trackLine())}</div>
       <div style="margin-top:12px;"><button class="btn" onclick="copyText(document.getElementById('trackOut').textContent)">Copy line</button></div>
-    </div>
+    </div>` : ''}
 
     <div class="panel">
       <h3>Summary</h3>
