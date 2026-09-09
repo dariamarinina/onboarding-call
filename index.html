@@ -1114,6 +1114,10 @@ const COURSE_NAMES = Object.keys(COURSES);
 
 const CALL_MINUTES = 20;
 
+/* Bump on every release. Shown on the prep screen so an OM running an offline
+   copy can tell in one glance whether it matches the hosted version. */
+const BUILD = '2026-09-09.1';
+
 /* The concern → antidote library: the one content asset that has to be
    maintained by hand. Keywords drive the auto-guess on the prep screen. */
 const FEARS = [
@@ -1643,11 +1647,13 @@ const stageHTML = (s, i) => {
 const FLUID_MAX = 820;
 function isFluid() { return S.view === 'slides' && window.innerWidth <= FLUID_MAX; }
 
-function fitStage(wrapSel) {
-  const wrap = document.querySelector(wrapSel);
+function fitStage(wrapSel, win) {
+  win = win || window;
+  const wrap = win.document.querySelector(wrapSel);
   const st = wrap && wrap.querySelector('.stage');
   if (!st) return;
-  if (isFluid()) { st.style.transform = ''; st.style.left = ''; st.style.top = ''; st.style.position = 'relative'; return; }
+  const fluid = win === window ? isFluid() : win.innerWidth <= FLUID_MAX;
+  if (fluid) { st.style.transform = ''; st.style.left = ''; st.style.top = ''; st.style.position = 'relative'; return; }
   const k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
   st.style.transform = `scale(${k})`;
   st.style.left = ((wrap.clientWidth - 1280 * k) / 2) + 'px';
@@ -1953,6 +1959,9 @@ function renderPrep() {
       <button class="btn" onclick="loadSample()">Load example</button>
       <button class="btn" onclick="loadBlank()">Empty form</button>
       <span class="note">Then open the student view and share <b>only that tab</b> in Meet.</span>
+      <span class="spacer" style="flex:1"></span>
+      <span class="note">Build ${BUILD}</span>
+      <button class="btn btn-sm" onclick="saveOffline()">Save offline copy</button>
     </div>
   </div></div>
   <div class="toast" id="toast"></div>`;
@@ -2002,6 +2011,25 @@ function courseChanged() {
   S.student.outcome = c.outcome;
   S.student.story = c.story;
   renderPrep();
+}
+
+/* Downloads the exact file currently being served, so the offline backup can't
+   drift from the hosted version. Only works over http(s) — from a local file
+   the browser refuses to read itself. */
+async function saveOffline() {
+  try {
+    const res = await fetch(location.pathname);
+    if (!res.ok) throw new Error(res.status);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'onboarding-call-' + BUILD + '.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Saved. Keep it in Downloads as your backup');
+  } catch (e) {
+    toast('Open the hosted link to save a copy');
+  }
 }
 
 function loadSample() { S.student = Object.assign({}, SAMPLE); renderPrep(); toast('Example loaded'); }
@@ -2063,6 +2091,7 @@ function pushStudent() {
   const payload = { type: 'state', S: { idx: S.idx, student: S.student, checks: S.checks, confirms: S.confirms, branch: S.branch, commitDay: S.commitDay, commitTime: S.commitTime } };
   if (bc) bc.postMessage(payload);
   try { if (childWin && !childWin.closed) childWin.postMessage(payload, '*'); } catch (e) {}
+  renderChild();
 }
 function applyState(x) {
   S.idx = x.idx; S.student = x.student; S.checks = x.checks; S.confirms = x.confirms;
@@ -2085,11 +2114,38 @@ window.addEventListener('message', e => {
    "Chrome tab" and pick it: it keeps being shared while the OM looks at this
    panel, with Meet's picture-in-picture floating the student's face on top. */
 function openStudent() {
-  const url = location.pathname + '?view=slides';
-  childWin = window.open(url, 'om_student');
+  childWin = window.open('', 'om_student');
   if (!childWin) return toast('The browser blocked the new tab — check its site settings');
-  setTimeout(pushStudent, 600);
+  const css = Array.prototype.map.call(document.querySelectorAll('style'), n => n.textContent).join('\n');
+  const d = childWin.document;
+  d.open();
+  d.write('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+          '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+          '<title>TripleTen</title><style>' + css + '</style></head>' +
+          '<body data-accent="orange"><div id="app"></div></body></html>');
+  d.close();
+  childWin.addEventListener('resize', renderChild);
+  renderChild();
   toast('In Meet: share Chrome tab → that tab');
+}
+
+/* Renders the student slide straight into the child window's DOM. */
+function renderChild() {
+  if (!childWin || childWin.closed) return;
+  let d, app;
+  try { d = childWin.document; app = d.getElementById('app'); } catch (e) { return; }
+  if (!app) return;   // a window opened by URL renders itself instead
+  d.body.className = 'view-slides' + (childWin.innerWidth <= FLUID_MAX ? ' fluid' : '');
+  const pct = ((S.idx + 1) / SLIDES.length) * 100;
+  app.innerHTML = '<div class="progress-thin" style="width:' + pct + '%"></div>' +
+                  '<div class="stage-wrap">' + stageHTML(S.student, S.idx) + '</div>';
+  fitStage('.stage-wrap', childWin);
+  const sl = d.querySelector('.slide');
+  if (sl) {
+    const upd = () => sl.classList.toggle('has-more', sl.scrollHeight - sl.clientHeight - sl.scrollTop > 8);
+    sl.addEventListener('scroll', upd, { passive: true });
+    childWin.requestAnimationFrame(upd);
+  }
 }
 
 /* ------------------------------------------------------------- lifecycle */
