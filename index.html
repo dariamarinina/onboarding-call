@@ -1142,6 +1142,11 @@ body.view-slides { background: var(--ink); }
 .panel .field textarea#fAnchor,
 .panel .field textarea#fFears { min-height: 132px; }
 
+/* the follow-up now happens in Hilos, so the panel is a short checklist */
+.hilos-steps { padding-left: 20px; margin: 0; }
+.hilos-steps li { font-size: 15px; line-height: 22px; color: var(--ink); margin-bottom: 7px; }
+.hilos-steps li:last-child { margin-bottom: 0; }
+
 </style>
 </head>
 <body data-accent="orange">
@@ -1879,7 +1884,7 @@ function renderPresenter() {
 
       ${renderControls(sl, s)}
 
-      ${last ? `<button class="btn btn-solid" style="width:100%" onclick="go('handoff')">Finalizar y redactar el WhatsApp →</button>` : ''}
+      ${last ? `<button class="btn btn-solid" style="width:100%" onclick="go('handoff')">Finalizar la llamada →</button>` : ''}
     </div></div>
   </div>
   <div class="toast" id="toast"></div>`;
@@ -1935,21 +1940,6 @@ function renderControls(sl, s) {
 
 /* -------------------------------------------------------------- handoff */
 
-function waMessage() {
-  const s = S.student;
-  return [
-    `Fue un verdadero gusto hablar contigo, ${s.name} 🙌`,
-    ``,
-    `Tu lugar en el curso de ${s.program} está reservado, y tu cohorte inicia el ${enDate(s.startDate, { weekday: 'long', month: 'long', day: 'numeric' })} 🎉`,
-    ``,
-    `Tu siguiente paso es `,
-    ``,
-    `No tiene que salir perfecto. Solo da el siguiente paso.`,
-    `Estoy aquí para lo que necesites 💪`,
-    `— ${s.omName}`
-  ].join('\n');
-}
-
 const SHOW_TRACKING = false;   // hidden for now; trackLine() stays ready
 
 function trackLine() {
@@ -1972,15 +1962,22 @@ function renderHandoff() {
   document.getElementById('app').innerHTML = `
   <div class="prep handoff"><div class="prep-inner" style="max-width:940px;">
     <h1>Llamada cerrada</h1>
-    <p class="prep-sub">Envía el WhatsApp de seguimiento al estudiante de inmediato.</p>
+    <p class="prep-sub">Solo queda el seguimiento por WhatsApp. Se envía desde Hilos.</p>
 
     <div class="panel" style="margin-bottom:20px;">
-      <h3>WhatsApp de seguimiento</h3>
-      <textarea id="waOut">${esc(waMessage())}</textarea>
-      <div style="margin-top:12px;display:flex;gap:10px;">
-        <button class="btn btn-solid" onclick="copyFrom('waOut')">Copiar mensaje</button>
-        <span class="note" style="font-size:12.5px;color:var(--text-tertiary);align-self:center;">Pégalo en Hilos y agrega los enlaces de la plataforma y de Discord.</span>
-      </div>
+      <h3>Seguimiento por WhatsApp</h3>
+      <p class="psub">Se envía desde Hilos con la plantilla, no desde aquí.</p>
+      <ol class="hilos-steps">
+        <li>Abre la conversación de <b>${esc(S.student.name)}</b> en Hilos.</li>
+        <li>Elige la plantilla <b>video_onboarding_after_call</b>.</li>
+        <li>Revisa que tu nombre, el del estudiante, el curso y la fecha de inicio queden correctos.</li>
+        <li>Pega el enlace de la plataforma.</li>
+        <li>Envíalo <b>antes de tomar la siguiente llamada</b>.</li>
+      </ol>
+      ${S.commitDay || S.commitTime ? `<div class="listen" style="margin-top:16px;">
+        Acordaron el sprint de bienvenida para el <b>${esc((S.commitDay || '') + (S.commitTime ? ' · ' + S.commitTime : ''))}</b>.
+        La plantilla no lo incluye: añádelo tú al final del mensaje.
+      </div>` : ''}
     </div>
 
     ${SHOW_TRACKING ? `<div class="panel" style="margin-bottom:20px;">
@@ -2222,7 +2219,6 @@ function toggleTimer() { S.timerStart = S.timerStart ? null : Date.now() - S.tim
 function copyText(t) {
   navigator.clipboard.writeText(t).then(() => toast('Copiado')).catch(() => toast('Cópialo manualmente (Ctrl+C)'));
 }
-function copyFrom(id) { const e = F(id); e.select(); copyText(e.value); }
 
 let toastT;
 function toast(msg) {
