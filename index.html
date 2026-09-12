@@ -1147,6 +1147,16 @@ body.view-slides { background: var(--ink); }
 .hilos-steps li { font-size: 15px; line-height: 22px; color: var(--ink); margin-bottom: 7px; }
 .hilos-steps li:last-child { margin-bottom: 0; }
 
+/* meeting outcome options */
+.outcome-list { list-style: none; margin-top: 14px; }
+.outcome-list li {
+  font-size: 14px; line-height: 20px; color: var(--text-secondary);
+  padding: 8px 0 8px 16px; position: relative;
+  border-top: 1px solid var(--hairline);
+}
+.outcome-list li::before { content: ''; position: absolute; left: 0; top: 15px; width: 5px; height: 5px; border-radius: 50%; background: var(--stone); }
+.outcome-list li b { color: var(--ink); font-weight: 500; }
+
 </style>
 </head>
 <body data-accent="orange">
@@ -1962,7 +1972,7 @@ function renderHandoff() {
   document.getElementById('app').innerHTML = `
   <div class="prep handoff"><div class="prep-inner" style="max-width:940px;">
     <h1>Llamada cerrada</h1>
-    <p class="prep-sub">Solo queda el seguimiento por WhatsApp. Se envía desde Hilos.</p>
+    <p class="prep-sub">Dos cosas antes de la siguiente llamada: el WhatsApp en Hilos y el estado de la reunión en HubSpot.</p>
 
     <div class="panel" style="margin-bottom:20px;">
       <h3>Seguimiento por WhatsApp</h3>
@@ -1971,12 +1981,12 @@ function renderHandoff() {
         <li>Abre la conversación de <b>${esc(S.student.name)}</b> en Hilos.</li>
         <li>Elige la plantilla <b>video_onboarding_after_call</b>.</li>
         <li>Revisa que tu nombre, el del estudiante, el curso y la fecha de inicio queden correctos.</li>
+        <li>Completa <b>{{commitment}}</b> con el día y la hora que acordaron.</li>
         <li>Pega el enlace de la plataforma.</li>
         <li>Envíalo <b>antes de tomar la siguiente llamada</b>.</li>
       </ol>
       ${S.commitDay || S.commitTime ? `<div class="listen" style="margin-top:16px;">
-        Acordaron el sprint de bienvenida para el <b>${esc((S.commitDay || '') + (S.commitTime ? ' · ' + S.commitTime : ''))}</b>.
-        La plantilla no lo incluye: añádelo tú al final del mensaje.
+        Para <b>{{commitment}}</b>: acordaron el <b>${esc((S.commitDay || '') + (S.commitTime ? ' · ' + S.commitTime : ''))}</b>.
       </div>` : ''}
     </div>
 
@@ -1986,6 +1996,22 @@ function renderHandoff() {
       <div class="mono-out" id="trackOut">${esc(trackLine())}</div>
       <div style="margin-top:12px;"><button class="btn" onclick="copyText(document.getElementById('trackOut').textContent)">Copiar línea</button></div>
     </div>` : ''}
+
+    <div class="panel" style="margin-bottom:20px;">
+      <h3>Estado de la reunión en HubSpot</h3>
+      <p class="psub">Hazlo ahora, no al final del día: después no vas a recordar quién asistió.</p>
+      <ol class="hilos-steps">
+        <li>Abre el ticket y busca la acción <b>Meeting</b>.</li>
+        <li>Haz clic en <b>Actions</b> → <b>Edit</b>.</li>
+        <li>Elige el <b>Meeting outcome</b>.</li>
+      </ol>
+      <ul class="outcome-list">
+        <li><b>Completed</b> — la reunión se realizó con éxito</li>
+        <li><b>Rescheduled</b> — el estudiante pidió reprogramarla antes de que ocurriera</li>
+        <li><b>No show</b> — el estudiante no se presentó</li>
+        <li><b>Cancelled</b> — el estudiante pidió cancelarla y no se agendó una nueva</li>
+      </ul>
+    </div>
 
     <div class="panel">
       <h3>Resumen</h3>
