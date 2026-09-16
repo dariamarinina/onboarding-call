@@ -1261,7 +1261,7 @@ const liLink = (url, cls) => url ? `<a class="${cls}" href="${url}" target="_bla
 
 /* Bump on every release. Shown on the prep screen so an OM running an offline
    copy can tell in one glance whether it matches the hosted version. */
-const BUILD = '2026-09-09.1';
+const BUILD = '2026-09-16.1';
 
 /* The concern → antidote library: the one content asset that has to be
    maintained by hand. Keywords drive the auto-guess on the prep screen. */
@@ -2222,9 +2222,12 @@ function resetAll() {
 function setIdx(i) { if (i < 0 || i >= deck().length) return; S.idx = i; if (!S.timerStart && i > 0) S.timerStart = Date.now(); paint(); }
 function next() { setIdx(S.idx + 1); }
 function prev() { setIdx(S.idx - 1); }
-function setBranch(b) { S.branch = b; paint(); }
-function setStory(i) { S.student.storyIdx = i; if (S.view === 'prep') renderPrep(); else paint(); }
-function setFear(id) { S.student.fearId = id; if (S.view === 'prep') renderPrep(); else paint(); }
+/* Anything that re-renders the prep screen has to save what the OM already
+   typed first — the inputs are the only place those values live until then. */
+function keepTyped() { if (S.view === 'prep') collectPrep(); }
+function setBranch(b) { keepTyped(); S.branch = b; paint(); }
+function setStory(i) { keepTyped(); S.student.storyIdx = i; if (S.view === 'prep') renderPrep(); else paint(); }
+function setFear(id) { keepTyped(); S.student.fearId = id; if (S.view === 'prep') renderPrep(); else paint(); }
 function toggleCheck(id) { S.checks[id] = !S.checks[id]; paint(); }
 function toggleConfirm(id) { S.confirms[id] = !S.confirms[id]; paint(); }
 
