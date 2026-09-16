@@ -1157,6 +1157,13 @@ body.view-slides { background: var(--ink); }
 .outcome-list li::before { content: ''; position: absolute; left: 0; top: 15px; width: 5px; height: 5px; border-radius: 50%; background: var(--stone); }
 .outcome-list li b { color: var(--ink); font-weight: 500; }
 
+/* three antidote cards fit one row rather than leaving an orphan below */
+.anti-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1090px; gap: 13px; }
+.anti-grid.three .anti-card { padding: 18px 20px; }
+.anti-grid.three .anti-card h4 { font-size: 17px; line-height: 21px; }
+.anti-grid.three .anti-card p { font-size: 15px; line-height: 20px; }
+.fluid .anti-grid.three { grid-template-columns: 1fr; }
+
 </style>
 </head>
 <body data-accent="orange">
@@ -1273,8 +1280,8 @@ const FEARS = [
     ack: 'La preocupación más común y la más manejable. Reconócela antes de responderla.',
     kw: ['no experience', 'no background', 'no tech background', 'technical background', 'never worked in tech', 'non-technical', 'not technical', 'beginner', 'no coding', 'career changer', 'from scratch', 'sin experiencia', 'no tiene experiencia', 'conocimientos previos', 'sin conocimientos', 'nunca ha programado', 'no viene de tecnolog', 'desde cero'],
     anti: [
-      { h: 'Un tutor técnico en Discord', p: 'Preguntas concretas, respuesta el mismo día. Nunca te quedas una semana a solas con un error.' },
-      { h: 'Dot, el asistente de IA', p: 'Dentro de la plataforma, 24/7. Te explica el paso que no entendiste, justo cuando te atoras.' }
+      { h: 'Un tutor técnico en Discord', p: 'Un experto real con quien platicar en Discord, y también disponible para sesiones 1 a 1 y llamadas de co-learning.' },
+      { h: 'Dot, el asistente de IA', p: 'Dentro de la plataforma, 24/7. Te explica el paso que no entendiste en segundos, apenas preguntas.' }
     ]
   },
   {
@@ -1285,7 +1292,8 @@ const FEARS = [
     kw: ['time', 'works full', 'schedule', 'busy', 'juggle', 'kids', 'family', 'shift', 'tiempo', 'horario', 'jornada', 'compaginar', 'estudia y trabaja', 'hijos', 'familia'],
     anti: [
       { h: 'Sprints de dos semanas con ritmo definido', p: 'Siempre sabes qué toca esta semana. No tienes que diseñar tu propio plan de estudio.' },
-      { h: 'Las sesiones en vivo quedan grabadas', p: 'Si el horario no te sirve, la ves después. No se pierde nada.' }
+      { h: 'Las sesiones en vivo quedan grabadas', p: 'Si el horario no te sirve, la ves después. No se pierde nada.' },
+      { h: 'Si la vida se atraviesa', p: 'Si no puedes mantener el ritmo, tu Success Manager te ayuda a fijar nuevas fechas y avanzar a tu propio ritmo.' }
     ]
   },
   {
@@ -1295,7 +1303,7 @@ const FEARS = [
     ack: 'Pregunta qué falló la vez anterior. La respuesta te dice qué apoyo destacar.',
     kw: ['tried before', 'without success', 'five years ago', 'dropped out', 'abandoned', 'quit the course', 'failed to', 'ya intent', 'sin éxito', 'abandon', 'dejó el curso', 'no lo logró'],
     anti: [
-      { h: 'Un Success Manager asignado', p: 'Alguien revisa tu avance cada semana y te escribe cuando te detienes. La vez anterior no tenías eso.' },
+      { h: 'Un Success Manager asignado', p: 'Alguien revisa tu avance cada semana durante los primeros meses y te ayuda cuando te atoras.' },
       { h: 'Proyectos de portafolio', p: 'Terminas con trabajo que puedes mostrar, no con apuntes. Esa es la diferencia entre estudiar y poder demostrarlo.' }
     ]
   },
@@ -1306,8 +1314,8 @@ const FEARS = [
     ack: 'Primero empatiza. No prometas resultados ni plazos de empleo.',
     kw: ['unemployed', 'lost his job', 'lost her job', 'income', 'money', 'financial', 'debt', 'salary', 'afford', 'financiamiento', 'econom', 'desemple', 'ingresos', 'dinero', 'pagar', 'deuda', 'beca'],
     anti: [
-      { h: 'Career services desde la mitad del programa', p: 'El CV, el portafolio y la práctica de entrevistas empiezan antes de graduarte, no después.' },
-      { h: 'Pensado para estudiar y trabajar', p: 'El ritmo está diseñado para estudiar con empleo o mientras buscas trabajo.' }
+      { h: 'Pensado para estudiar y trabajar', p: 'El ritmo está diseñado para estudiar con empleo o mientras buscas trabajo.' },
+      { h: 'Career Acceleration al terminar el programa', p: 'Después de terminar en solo {months} meses, un track de 6 semanas deja listos tu CV, LinkedIn, portafolio y GitHub, con un Career Coach acompañándote en todo momento.' }
     ]
   },
   {
@@ -1318,7 +1326,7 @@ const FEARS = [
     kw: ['already knows', 'master\u2019s', 'masters', 'basic', 'repetitive', 'already studied', 'advanced level', 'lose interest', 'demasiado básico', 'ya sabe', 'maestría', 'repetitivo', 'perder interés', 'nivel avanzado'],
     anti: [
       { h: 'Puedes avanzar más rápido', p: 'Si ya tienes las bases, cierras los primeros módulos rápido y llegas a lo que sí es nuevo.' },
-      { h: 'Proyectos revisados por expertos', p: 'La dificultad real está en los proyectos y en la revisión, no en las lecciones introductorias.' }
+      { h: 'Proyectos revisados por expertos', p: 'La dificultad real está en los proyectos y en la revisión: creces y te retan con tareas nuevas.' }
     ]
   },
   {
@@ -1598,8 +1606,8 @@ const SLIDES = [
       <p class="small-label">Hablemos de lo que te preocupa</p>
       <div class="fear-head">${esc(f.slide)}</div>
       <h2 style="margin-bottom:26px;">Esto es lo que hay del otro lado</h2>
-      <div class="anti-grid${f.anti.length === 1 ? ' one' : ''}">
-        ${f.anti.map(a => `<div class="anti-card"><h4>${esc(a.h)}</h4><p>${esc(a.p)}</p></div>`).join('')}
+      <div class="anti-grid${f.anti.length === 1 ? ' one' : f.anti.length === 3 ? ' three' : ''}">
+        ${f.anti.map(a => `<div class="anti-card"><h4>${esc(a.h)}</h4><p>${esc(a.p).replace('{months}', esc(s.months))}</p></div>`).join('')}
       </div>
     </div>`;
   },
@@ -1731,7 +1739,7 @@ const SLIDES = [
       'Mientras tanto, asegurémonos de que sepas qué esperar las próximas semanas, y resuelvo cualquier duda sobre el programa.'
     ]
   })[S.branch] || [],
-  listen: 'Mínimo indispensable de la llamada: sesión iniciada + Discord. Con solo eso, el video ya valió la pena.',
+  listen: 'Mínimo indispensable de la llamada: sesión iniciada en la plataforma. Con solo eso, el video ya valió la pena.',
   controls: 'setup'
 },
 
